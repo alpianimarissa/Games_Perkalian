@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detektif Perkalian - Game Matematika Seru!</title>
+    <style>
+        /* Desain Background & Font Ramah Anak */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Kontainer Utama Game */
+        .game-container {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 15px 0 #d5d5d5, 0 25px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 4px solid #FF94B9;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #FF5964;
+            font-size: 2.2rem;
+            margin-top: 0;
+            text-shadow: 2px 2px 0px #FFE1E3;
+            letter-spacing: 1px;
+        }
+
+        /* Bagian Pengaturan Rentang */
+        .setup-section {
+            background-color: #F0F4F8;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #35A7FF;
+        }
+
+        .setup-section label {
+            font-size: 1.1rem;
+            color: #384D65;
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .select-btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .range-btn {
+            background-color: #FFFFFF;
+            border: 3px solid #35A7FF;
+            color: #35A7FF;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #35A7FF;
+        }
+
+        .range-btn.active {
+            background-color: #35A7FF;
+            color: white;
+            box-shadow: 0 4px 0 #1A7FB8;
+            transform: translateY(2px);
+        }
+
+        .custom-range {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .custom-range input {
+            width: 60px;
+            padding: 6px;
+            border-radius: 10px;
+            border: 2px solid #35A7FF;
+            text-align: center;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+        }
+
+        /* Skor & Nyawa */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+
+        .score-box { color: #38B000; }
+        .streak-box { color: #FF9F1C; }
+
+        /* Tampilan Soal */
+        .question-box {
+            background-color: #FFF275;
+            border: 3px solid #FFAE03;
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 0 #FFAE03;
+        }
+
+        .question-text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: #FF5964;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        /* Pilihan Jawaban (Style Quizizz) */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 3px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 18px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 #E2E8F0;
+        }
+
+        /* Warna asli tombol */
+        .option-btn:nth-child(1) { color: #FF5964; border-color: #FF2E3B; box-shadow: 0 6px 0 #FF2E3B; }
+        .option-btn:nth-child(2) { color: #35A7FF; border-color: #068FFF; box-shadow: 0 6px 0 #068FFF; }
+        .option-btn:nth-child(3) { color: #38B000; border-color: #007200; box-shadow: 0 6px 0 #007200; }
+        .option-btn:nth-child(4) { color: #FF9F1C; border-color: #E76F51; box-shadow: 0 6px 0 #E76F51; }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+
+        /* Gaya Tombol Saat Salah (Disabled) */
+        .option-btn:disabled {
+            background-color: #E2E8F0 !important;
+            border-color: #CBD5E1 !important;
+            color: #94A3B8 !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            transform: translateY(4px);
+        }
+
+        /* Feedback Benar / Salah */
+        .feedback-overlay {
+            margin-top: 15px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.4rem;
+            min-height: 40px;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .feedback-overlay.show {
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .correct-anim { color: #38B000; }
+        .wrong-anim { color: #FF5964; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🎯 Detektif Perkalian</h1>
+
+    <!-- Menu Pengaturan Rentang -->
+    <div class="setup-section">
+        <label>Mau Pakai Perkalian Berapa? 🤔</label>
+        <div class="select-btn-group">
+            <button class="range-btn active" onclick="setRange('1-5', this)">1 - 5</button>
+            <button class="range-btn" onclick="setRange('1-10', this)">1 - 10</button>
+            <button class="range-btn" onclick="setRange('custom', this)">Pilih Sendiri</button>
+        </div>
+        <div class="custom-range" id="customRangeInput">
+            <input type="number" id="minVal" value="1" min="1"> 
+            <span>sampai</span> 
+            <input type="number" id="maxVal" value="12" min="1">
+            <button class="range-btn" onclick="generateQuestion()" style="padding: 4px 10px; font-size: 0.8rem;">Set</button>
+        </div>
+    </div>
+
+    <!-- Status Skor -->
+    <div class="status-bar">
+        <div class="score-box">Skor: <span id="scoreText">0</span> ✨</div>
+        <div class="streak-box">Beruntun: <span id="streakText">0</span> 🔥</div>
+    </div>
+
+    <!-- Area Soal -->
+    <div class="question-box">
+        <p class="question-text" id="questionText">0 x 0</p>
+    </div>
+
+    <!-- Pilihan Jawaban -->
+    <div class="options-grid" id="optionsGrid">
+        <button class="option-btn" onclick="checkAnswer(this)">?</button>
+        <button class="option-btn" onclick="checkAnswer(this)">?</button>
+        <button class="option-btn" onclick="checkAnswer(this)">?</button>
+        <button class="option-btn" onclick="checkAnswer(this)">?</button>
+    </div>
+
+    <!-- Feedback Teks -->
+    <div class="feedback-overlay" id="feedbackText">Hebat! Benar Sekali! 🎉</div>
+</div>
+
+<script>
+    let minRange = 1;
+    let maxRange = 5;
+    let score = 0;
+    let streak = 0;
+    let correctAnswer = 0;
+    let isProcessingCorrect = false;
+
+    // Membuat synthesizer suara mandiri bawaan browser
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+        // Mulai audio context jika sempat tertahan browser
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+            // Suara Ting-Ting Ceria naik keatas
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now); // Nada C5
+            osc.frequency.setValueAtTime(659.25, now + 0.1); // Nada E5
+            osc.frequency.setValueAtTime(783.99, now + 0.2); // Nada G5
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+            // Suara Boing Lucu turun kebawah
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(80, now + 0.3); // Nada merosot kebawah
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        }
+    }
+
+    // Fungsi mengganti rentang perkalian
+    function setRange(mode, element) {
+        document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        const customInputDiv = document.getElementById('customRangeInput');
+        
+        if (mode === '1-5') {
+            minRange = 1;
+            maxRange = 5;
+            customInputDiv.style.display = 'none';
+            generateQuestion();
+        } else if (mode === '1-10') {
+            minRange = 1;
+            maxRange = 10;
+            customInputDiv.style.display = 'none';
+            generateQuestion();
+        } else if (mode === 'custom') {
+            customInputDiv.style.display = 'flex';
+        }
+    }
+
+    // Fungsi membuat angka acak dan pilihan jawaban
+    function generateQuestion() {
+        if (document.getElementById('customRangeInput').style.display === 'flex') {
+            minRange = parseInt(document.getElementById('minVal').value) || 1;
+            maxRange = parseInt(document.getElementById('maxVal').value) || 10;
+        }
+
+        const num1 = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+        const num2 = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+        
+        correctAnswer = num1 * num2;
+        
+        document.getElementById('questionText').innerText = `${num1} x ${num2}`;
+
+        let options = [correctAnswer];
+        while (options.length < 4) {
+            let wrongOption = correctAnswer + (Math.floor(Math.random() * 7) - 3) * (Math.random() > 0.5 ? num1 : num2);
+            if (wrongOption < 0) wrongOption = Math.floor(Math.random() * (maxRange * maxRange)) + 1;
+            
+            if (!options.includes(wrongOption) && wrongOption !== correctAnswer) {
+                options.push(wrongOption);
+            }
+        }
+
+        options.sort(() => Math.random() - 0.5);
+
+        const buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach((btn, index) => {
+            btn.innerText = options[index];
+            btn.disabled = false;
+            btn.style.backgroundColor = 'white';
+        });
+
+        document.getElementById('feedbackText').classList.remove('show');
+        isProcessingCorrect = false;
+    }
+
+    // Fungsi memeriksa jawaban
+    function checkAnswer(button) {
+        if (isProcessingCorrect) return;
+
+        const selectedAnswer = parseInt(button.innerText);
+        const feedbackEl = document.getElementById('feedbackText');
+
+        const pujianBenar = ["Hebat! Benar Sekali! 🎉", "Wow, kamu pintar! 🌟", "Luar Bilaaaaasa! ✨", "Betul! Kamu hebat! 🚀"];
+        const semangatiSalah = ["Ups! Bukan yang itu, coba lagi yuk! 🤗", "Hampir tepat! Cari jawaban lain! 💪", "Kurang pas, tebak tombol lain! 😎"];
+
+        if (selectedAnswer === correctAnswer) {
+            isProcessingCorrect = true;
+            score += 10;
+            streak += 1;
+            button.style.backgroundColor = '#85E3FF'; 
+            
+            playSound('correct'); // Bunyi efek menang!
+            
+            feedbackEl.innerText = pujianBenar[Math.floor(Math.random() * pujianBenar.length)];
+            feedbackEl.className = "feedback-overlay show correct-anim";
+
+            document.getElementById('scoreText').innerText = score;
+            document.getElementById('streakText').innerText = streak;
+
+            setTimeout(() => {
+                generateQuestion();
+            }, 1500);
+
+        } else {
+            streak = 0; 
+            button.disabled = true;
+            
+            playSound('wrong'); // Bunyi efek salah lucuu!
+            
+            feedbackEl.innerText = semangatiSalah[Math.floor(Math.random() * semangatiSalah.length)];
+            feedbackEl.className = "feedback-overlay show wrong-anim";
+            
+            document.getElementById('streakText').innerText = streak;
+        }
+    }
+
+    window.onload = function() {
+        generateQuestion();
+    };
+</script>
+
+</body>
+</html>
